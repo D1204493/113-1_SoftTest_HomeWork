@@ -17,31 +17,19 @@ import java.util.logging.Logger;
  * MLB profit
  * @author Huang
  */
-
-public class MLBProfit {
+public class MlbProfit {
   //設定 Logger
   private static final Logger logger = Logger.getLogger(Main.class.getName());
 
   private static final int tickPrice = 450; //門票
-  private static final int worldGameTickPrice = 800; //門票
+//  private static final int worldGameTicket = 800; //門票
   private static final double hostRevenue = 0.85; //主場分潤
   private static final double clientRevenue = 0.15; //客場分潤
 
-  // 定義 Team 類用來對應 JSON 的球隊數據
-  public static class Team {
-    public String team;
-    public double scoreRate;
-    public int Rank;
-  }
-  //球隊場地的 JSON檔
-  public static class TeamStadium {
-    public String team;
-    public String stadium;
-    public int seats;
-    public double playoffAttendanceRate;
-    public double worldSeriesAttendanceRate;
-  }
-
+  /**
+   * This is a fetch JSON file class
+   * @author Huang
+   */
   // 定義對應的 JSON 結構
   // JSON 中的字段名 "AL Leaders" 與 Java 類中的屬性 "AL_Leaders" 不匹配。JSON 中的字段名有空格，而 Java 屬性名稱是使用下劃線的。
   // 透過使用 Jackson 的 @JsonProperty 註解來指定 JSON 中的字段名稱對應 Java 類的屬性名稱。這樣，即使 JSON 中的字段名包含空格，也能夠正確解析。

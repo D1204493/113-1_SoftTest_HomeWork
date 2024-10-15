@@ -127,9 +127,6 @@ public class MLBProfit {
   }
 
 
-
-
-
   // 統一處理球隊的利潤計算與輸出
   public static void processTeams(List<Team> teams, Map<String, TeamStadium> stadiumMap) {
     //日誌
@@ -193,9 +190,6 @@ public class MLBProfit {
       }
     }
   }
-
-
-
 
   public static void calculateAndPrintProfit(int rank, TeamStadium stadiumInfo, Map<Integer, TeamStadium> rankToStadiumMap) {
     logger.log(Level.INFO, "計算 Rank {0} 的球隊利潤", rank);
@@ -269,6 +263,9 @@ public class MLBProfit {
                     + calculateClientProfit(rank3Stadium.seats, rank3Stadium.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰老虎6或太空人3(都是41K, 滿座率都100%)
           }
         }
+        //當自己是主場
+        maxProfit = maxProfit + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+                + worldGameTickPrice*56000*1.0*clientRevenue*3; //(7戰4勝) -> 對戰老道奇 (56K, 滿座率100%)
         break;
 //        maxProfit = calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 3)
 //                + calculateClientProfit(45000, 1.0, 2) //(5戰3勝) -> 對戰金鶯4
@@ -276,7 +273,6 @@ public class MLBProfit {
 //                + calculateClientProfit(41000, 1.0, 3); //(7戰4勝) -> 對戰老虎6或太空人3(都是41K, 滿座率都100%)
 //        minProfit = calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 2)
 //                + calculateClientProfit(37000, 1.0, 1); //(3敗)
-
 
       case 2: //守護者   //先不放世界大賽
         System.out.println("排名第" + rank + "的隊伍：" + stadiumInfo.team);
@@ -333,6 +329,9 @@ public class MLBProfit {
                     + calculateClientProfit(rank5Stadium.seats, rank5Stadium.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰金鶯4
           }
         }
+        //當自己是主場
+        maxProfit = maxProfit + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+                + worldGameTickPrice*56000*1.0*clientRevenue*3; //(7戰4勝)
         break;
 
 //        maxProfit = calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 3)
@@ -343,7 +342,6 @@ public class MLBProfit {
 
 //        minProfit = calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 2)
 //                + calculateClientProfit(41000, 1.0, 1); //(3敗)
-
 
       case 3: //太空人   //先不放世界大賽
         System.out.println("排名第" + rank + "的隊伍：" + stadiumInfo.team);
@@ -384,6 +382,9 @@ public class MLBProfit {
                     + calculateClientProfit(rank5Stadium.seats, rank5Stadium.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰金鶯4
           }
         }
+        //當自己是主場
+        maxProfit = maxProfit + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+                + worldGameTickPrice*56000*1.0*clientRevenue*3; //(7戰4勝)
         break;
 
       case 4: //金鶯   //先不放世界大賽
@@ -415,6 +416,9 @@ public class MLBProfit {
             maxProfit = maxProfit + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
                     + calculateClientProfit(rank6Stadium.seats, rank6Stadium.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰老虎6
         }
+        //當自己是主場
+        maxProfit = maxProfit + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+                + worldGameTickPrice*56000*1.0*clientRevenue*3; //(7戰4勝)
         break;
 
       case 5: //皇家  //先不放世界大賽
@@ -502,6 +506,9 @@ public class MLBProfit {
                   + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰洋基1
           }
         }
+        //當自己是主場
+        maxProfit = maxProfit + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+                + worldGameTickPrice*56000*1.0*clientRevenue*3; //(7戰4勝)
         break;
 
       default:
@@ -527,6 +534,8 @@ public class MLBProfit {
     public static double calculateHostProfit(int seats, double attendanceRate, int games) {
       return calculateProfit(seats, attendanceRate) * hostRevenue * games;
     }
+
+    //世界大賽方法
 
 
 }
