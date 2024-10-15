@@ -41,54 +41,61 @@ public class MlbSort {
         }
 
         // 檢查是否是區域名稱
-        if(line.startsWith(AL_EAST)) {
+        if (line.startsWith(AL_EAST)) {
           currentArea = AL_EAST;
           continue;
-        } else if(line.startsWith(AL_CENTRAL)) {
+        } else if (line.startsWith(AL_CENTRAL)) {
           currentArea = AL_CENTRAL;
           continue;
-        } else if(line.startsWith(AL_WEST)) {
+        } else if (line.startsWith(AL_WEST)) {
           currentArea = AL_WEST;
           continue;
-        } else if(line.startsWith(NL_EAST)) {
+        } else if (line.startsWith(NL_EAST)) {
           currentArea = NL_EAST;
           continue;
-        } else if(line.startsWith(NL_CENTRAL)) {
+        } else if (line.startsWith(NL_CENTRAL)) {
           currentArea = NL_CENTRAL;
           continue;
-        } else if(line.startsWith(NL_WEST)) {
+        } else if (line.startsWith(NL_WEST)) {
           currentArea = NL_WEST;
           continue;
         }
 
-        // 分割球隊資料
-        String[] splitLine = line.split(",");
-        String teamName = splitLine[0];
-        String win = splitLine[1];
-        String lose = splitLine[2];
-        String pctRate = splitLine[3];
-        Team team = new Team(teamName, win, lose, pctRate);
+        try {
+          // 分割球隊資料
+          String[] splitLine = line.split(",");
+          String teamName = splitLine[0];
+          String win = splitLine[1];
+          String lose = splitLine[2];
+          String pctRate = splitLine[3];
+          Team team = new Team(teamName, win, lose, pctRate);
 
-        //判斷當前區域名稱
-        switch(currentArea) {
-          case AL_EAST:
-            alEastTeams.add(team);
-            break;
-          case AL_CENTRAL:
-            alCentralTeams.add(team);
-            break;
-          case AL_WEST:
-            alWestTeams.add(team);
-            break;
-          case NL_EAST:
-            nlEastTeams.add(team);
-            break;
-          case NL_CENTRAL:
-            nlCentralTeams.add(team);
-            break;
-          case NL_WEST:
-            nlWestTeams.add(team);
-            break;
+          //判斷當前區域名稱
+          switch (currentArea) {
+            case AL_EAST:
+              alEastTeams.add(team);
+              break;
+            case AL_CENTRAL:
+              alCentralTeams.add(team);
+              break;
+            case AL_WEST:
+              alWestTeams.add(team);
+              break;
+            case NL_EAST:
+              nlEastTeams.add(team);
+              break;
+            case NL_CENTRAL:
+              nlCentralTeams.add(team);
+              break;
+            case NL_WEST:
+              nlWestTeams.add(team);
+              break;
+            default:
+              System.err.println("未知的區域: " + currentArea);
+              break;
+          }
+        } catch (NumberFormatException e) {
+          System.err.println("第 " + lineNumber + " 行格式無法解析成數字: " + line);
         }
       }
 
@@ -99,8 +106,15 @@ public class MlbSort {
       teamsByArea.put(NL_EAST, nlEastTeams);
       teamsByArea.put(NL_CENTRAL, nlCentralTeams);
       teamsByArea.put(NL_WEST, nlWestTeams);
-    } catch(IOException e) {
-      throw new RuntimeException(e);
+    } catch (FileNotFoundException e) {
+      System.err.println("無法找到文件: " + filename);
+      e.printStackTrace();
+    } catch (IOException e) {
+      System.err.println("讀取文件時發生錯誤: " + filename);
+      e.printStackTrace();
+    } catch (Exception e) {
+      System.err.println("處理文件時發生意外錯誤: " + e.getMessage());
+      e.printStackTrace();
     }
   }
 

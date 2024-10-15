@@ -1,0 +1,86 @@
+[
+  {
+    "team": "Los Angeles Dodgers",
+    "stadium": "Dodger Stadium",
+    "seats": 56000,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "San Diego Padres",
+    "stadium": "Petco Park",
+    "seats": 40000,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "Milwaukee Brewers",
+    "stadium": "American Family Field",
+    "seats": 42000,
+    "playoffAttendanceRate": 0.97,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "New York Mets",
+    "stadium": "Citi Field",
+    "seats": 41800,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "Atlanta Braves",
+    "stadium": "Truist Park",
+    "seats": 41000,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "Baltimore Orioles",
+    "stadium": "Oriole Park",
+    "seats": 45000,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "New York Yankees",
+    "stadium": "Yankee Stadium",
+    "seats": 47000,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "Cleveland Guardians",
+    "stadium": "Progressive Field",
+    "seats": 34800,
+    "playoffAttendanceRate": 0.98,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "Houston Astros",
+    "stadium": "Minute Maid Park",
+    "seats": 41000,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "Kansas City Royals",
+    "stadium": "Kauffman Stadium",
+    "seats": 37000,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "Detroit Tigers",
+    "stadium": "Comerica Park",
+    "seats": 41000,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  },
+  {
+    "team": "Philadelphia Phillies",
+    "stadium": "Citizens Bank Park",
+    "seats": 42000,
+    "playoffAttendanceRate": 1.0,
+    "worldSeriesAttendanceRate": 1.0
+  }
+]

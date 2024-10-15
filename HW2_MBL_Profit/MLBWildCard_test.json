@@ -1,0 +1,112 @@
+{
+  "wild_card_teams": [
+    {
+      "team_name": "New York Yankees",
+      "league": "American League",
+      "record": {
+        "wins": 92,
+        "losses": 70
+      },
+      "rank": 1
+    },
+    {
+      "team_name": "Cleveland Guardians",
+      "league": "American League",
+      "record": {
+        "wins": 90,
+        "losses": 72
+      },
+      "rank": 2
+    },
+    {
+      "team_name": "Houston Astros",
+      "league": "American League",
+      "record": {
+        "wins": 88,
+        "losses": 74
+      },
+      "rank": 3
+    },
+    {
+      "team_name": "Baltimore Orioles",
+      "league": "American League",
+      "record": {
+        "wins": 87,
+        "losses": 75
+      },
+      "rank": 4
+    },
+    {
+      "team_name": "Kansas City Royals",
+      "league": "American League",
+      "record": {
+        "wins": 85,
+        "losses": 77
+      },
+      "rank": 5
+    },
+    {
+      "team_name": "Detroit Tigers",
+      "league": "American League",
+      "record": {
+        "wins": 84,
+        "losses": 78
+      },
+      "rank": 6
+    },
+    {
+      "team_name": "Los Angeles Dodgers",
+      "league": "National League",
+      "record": {
+        "wins": 89,
+        "losses": 73
+      },
+      "rank": 1
+    },
+    {
+      "team_name": "Philadelphia Phillies",
+      "league": "National League",
+      "record": {
+        "wins": 88,
+        "losses": 74
+      },
+      "rank": 2
+    },
+    {
+      "team_name": "Milwaukee Brewers",
+      "league": "National League",
+      "record": {
+        "wins": 87,
+        "losses": 75
+      },
+      "rank": 3
+    },
+    {
+      "team_name": "San Diego Padres",
+      "league": "National League",
+      "record": {
+        "wins": 86,
+        "losses": 76
+      },
+      "rank": 4
+    },
+    {
+      "team_name": "Atlanta Braves",
+      "league": "National League",
+      "record": {
+        "wins": 85,
+        "losses": 77
+      },
+      "rank": 5
+    },
+    {
+      "team_name": "New York Mets",
+      "league": "National League",
+      "record": {
+        "wins": 84,
+        "losses": 78
+      },
+      "rank": 6
+    }
+  ]
+}

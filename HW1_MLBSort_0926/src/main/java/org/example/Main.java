@@ -38,6 +38,13 @@ public class Main {
     // 調用排序方法對美聯與國聯各區第一名之球隊進行排序
     al_firstPlaceTeams = sortTeamsByPct(al_firstPlaceTeams);
     nl_firstPlaceTeams = sortTeamsByPct(nl_firstPlaceTeams);
+    assert (Double.parseDouble(al_firstPlaceTeams.get(0).getPct()) >= Double.parseDouble(al_firstPlaceTeams.get(1).getPct())): "美聯第一的勝率不可能 < 美聯第二的勝率";
+    assert (Double.parseDouble(al_firstPlaceTeams.get(1).getPct()) >= Double.parseDouble(al_firstPlaceTeams.get(2).getPct())): "美聯第二的勝率不可能 < 美聯第三的勝率";
+    assert (Double.parseDouble(al_firstPlaceTeams.get(0).getPct()) >= Double.parseDouble(al_firstPlaceTeams.get(2).getPct())): "美聯第一的勝率不可能 < 美聯第三的勝率";
+
+    assert (Double.parseDouble(nl_firstPlaceTeams.get(0).getPct()) >= Double.parseDouble(nl_firstPlaceTeams.get(1).getPct())): "國聯第一的勝率不可能 < 國聯第二的勝率";
+    assert (Double.parseDouble(nl_firstPlaceTeams.get(1).getPct()) >= Double.parseDouble(nl_firstPlaceTeams.get(2).getPct())): "國聯第二的勝率不可能 < 國聯第三的勝率";
+    assert (Double.parseDouble(nl_firstPlaceTeams.get(0).getPct()) >= Double.parseDouble(nl_firstPlaceTeams.get(2).getPct())): "國聯第一的勝率不可能 < 國聯第三的勝率";
 
     // 將美聯各區第一名排序結果放入變數
     al_one = al_firstPlaceTeams.get(0).getTeamName();
@@ -64,11 +71,16 @@ public class Main {
       nl_notFirstPlaceTeams.add(ms.nlCentralTeams.get(i));
       nl_notFirstPlaceTeams.add(ms.nlWestTeams.get(i));
     }
-    System.out.println("AL_notFirstPlaceTeams:"+al_notFirstPlaceTeams);
-    System.out.println("NL_notFirstPlaceTeams:"+nl_notFirstPlaceTeams);
+//    System.out.println("AL_notFirstPlaceTeams:"+al_notFirstPlaceTeams);
+//    System.out.println("NL_notFirstPlaceTeams:"+nl_notFirstPlaceTeams);
+
     // 美聯"非"第一名之排序
     al_notFirstPlaceTeams = sortTeamsByPct(al_notFirstPlaceTeams);
-    System.out.println("排序AL_notFirstPlaceTeams:"+al_notFirstPlaceTeams);
+//    System.out.println("排序AL_notFirstPlaceTeams:"+al_notFirstPlaceTeams);
+    assert (Double.parseDouble(al_notFirstPlaceTeams.get(0).getPct()) >= Double.parseDouble(al_notFirstPlaceTeams.get(1).getPct())): "美聯第四的勝率不可能 < 美聯第五的勝率";
+    assert (Double.parseDouble(al_notFirstPlaceTeams.get(1).getPct()) >= Double.parseDouble(al_notFirstPlaceTeams.get(2).getPct())): "美聯第五的勝率不可能 < 美聯第六的勝率";
+    assert (Double.parseDouble(al_notFirstPlaceTeams.get(0).getPct()) >= Double.parseDouble(al_notFirstPlaceTeams.get(2).getPct())): "美聯第四的勝率不可能 < 美聯第六的勝率";
+
     // 抓取美聯"非"第一名隊伍排序後的前三名，並放入變數
     al_four = al_notFirstPlaceTeams.get(0).getTeamName();
     al_five = al_notFirstPlaceTeams.get(1).getTeamName();
@@ -76,7 +88,11 @@ public class Main {
 
     // 國聯"非"第一名之排序
     nl_notFirstPlaceTeams = sortTeamsByPct(nl_notFirstPlaceTeams);
-    System.out.println("排序NL_notFirstPlaceTeams:"+nl_notFirstPlaceTeams);
+//    System.out.println("排序NL_notFirstPlaceTeams:"+nl_notFirstPlaceTeams);
+    assert (Double.parseDouble(nl_notFirstPlaceTeams.get(0).getPct()) >= Double.parseDouble(nl_notFirstPlaceTeams.get(1).getPct())): "國聯第四的勝率不可能 < 國聯第五的勝率";
+    assert (Double.parseDouble(nl_notFirstPlaceTeams.get(1).getPct()) >= Double.parseDouble(nl_notFirstPlaceTeams.get(2).getPct())): "國聯第五的勝率不可能 < 國聯第六的勝率";
+    assert (Double.parseDouble(nl_notFirstPlaceTeams.get(0).getPct()) >= Double.parseDouble(nl_notFirstPlaceTeams.get(2).getPct())): "國聯第四的勝率不可能 < 國聯第六的勝率";
+
     // 抓取國聯"非"第一名隊伍排序後的前三名，並放入變數
     nl_four = nl_notFirstPlaceTeams.get(0).getTeamName();
     nl_five = nl_notFirstPlaceTeams.get(1).getTeamName();
