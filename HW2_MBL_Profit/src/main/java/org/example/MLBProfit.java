@@ -78,6 +78,7 @@ public class MLBProfit {
         logger.log(Level.SEVERE, "球場資訊檔案為空或格式錯誤。");
         return;
       }
+
 //      for(TeamStadium stadium: teamStadium) {
 //        stadiumMap.put(stadium.team, stadium);
 //      }
@@ -113,12 +114,12 @@ public class MLBProfit {
       // 處理合併後的球隊列表
       System.out.println("=== AL All Teams ===");
       logger.log(Level.INFO, "處理 AL 所有球隊資料");
-      processTeams(allTeams, stadiumMap);
+      processTeams(allTeams, nlTeams, stadiumMap, teamStadium);
 
       // 處理合併後的 NL 球隊列表
       System.out.println("=== NL All Teams ===");
       logger.log(Level.INFO, "處理 NL 所有球隊資料");
-      processTeams(nlTeams, stadiumMap);
+      processTeams(nlTeams, allTeams, stadiumMap, teamStadium);
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "發生未預期的錯誤", e);
@@ -128,7 +129,7 @@ public class MLBProfit {
 
 
   // 統一處理球隊的利潤計算與輸出
-  public static void processTeams(List<Team> teams, Map<String, TeamStadium> stadiumMap) {
+  public static void processTeams(List<Team> teams, List<Team> otherTeams, Map<String, TeamStadium> stadiumMap, List<TeamStadium> teamStadium) {
     //日誌
     if (teams == null || teams.isEmpty()) {
       logger.log(Level.WARNING, "球隊資料為空，無法處理。");
@@ -178,26 +179,32 @@ public class MLBProfit {
     }
     System.out.println("===============================\n"); //確定rankToStadiumMap有資料
 
+    String baseRegion = "NL"; // 可替換為 "NL" 來進行其他區域比較
+    String targetRegion = "AL"; // 可替換為 "AL" 來進行其他區域比較
+    List<Team> baseTeams = getTeamsByRegion(baseRegion, teams, otherTeams);
+    List<Team> targetTeams = getTeamsByRegion(targetRegion, teams, otherTeams);
+
     // 利潤計算 calculateAndPrintProfit
     for (Team team : teams) {
       TeamStadium stadiumInfo = rankToStadiumMap.get(team.Rank); //確定rankToStadiumMap有資料
       if (stadiumInfo != null) {
         logger.log(Level.INFO, "計算利潤: 球隊 {0}, Rank: {1}, 球場: {2}",
                 new Object[]{team.team, team.Rank, stadiumInfo.team});
-        calculateAndPrintProfit(team.Rank, stadiumInfo, rankToStadiumMap);
+        calculateAndPrintProfit(team.Rank, stadiumInfo, rankToStadiumMap, baseTeams, targetTeams, teamStadium); // 傳遞所有球隊
       } else {
         logger.log(Level.WARNING, "無法找到 {0} 的對應球場資訊進行利潤計算。", team.team);
       }
     }
   }
 
-  public static void calculateAndPrintProfit(int rank, TeamStadium stadiumInfo, Map<Integer, TeamStadium> rankToStadiumMap) {
+  public static void calculateAndPrintProfit(int rank, TeamStadium stadiumInfo, Map<Integer, TeamStadium> rankToStadiumMap, List<Team> baseTeams, List<Team> targetTeams, List<TeamStadium> teamStadium) {
     logger.log(Level.INFO, "計算 Rank {0} 的球隊利潤", rank);
     double maxProfit = 0;
     double minProfit = 0;
-
+    double worldProfit = 0;
+    int playGames;
     // 根據球隊外卡排名使用 switch 來進行利潤計算
-    switch(rank) {  //世界大賽需要再處理
+    switch(rank) {
       case 1://洋基(5戰3勝) -> (7戰4勝)
         System.out.println("排名第" + rank + "的隊伍：" + stadiumInfo.team);
         // 取得排名4和排名5的球隊資料
@@ -264,8 +271,19 @@ public class MLBProfit {
           }
         }
         //當自己是主場
-        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
-                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝) -> 對戰老道奇 (56K, 滿座率100%)
+        WorldSeriesProfitResult result = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result.getMaxProfit();
+        playGames = result.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝) -> 對戰道奇 (56K, 滿座率100%)
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
+
+//        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+//                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝) -> 對戰老道奇 (56K, 滿座率100%)
         break;
 //        maxProfit = calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 3)
 //                + calculateClientProfit(45000, 1.0, 2) //(5戰3勝) -> 對戰金鶯4
@@ -330,8 +348,18 @@ public class MLBProfit {
           }
         }
         //當自己是主場
-        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
-                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝)
+        WorldSeriesProfitResult result2 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result2.getMaxProfit();
+        playGames = result2.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
+//        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+//                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝)
         break;
 
 //        maxProfit = calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 3)
@@ -383,8 +411,18 @@ public class MLBProfit {
           }
         }
         //當自己是主場
-        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
-                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝)
+        WorldSeriesProfitResult result3 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result3.getMaxProfit();
+        playGames = result3.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
+//        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+//                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝)
         break;
 
       case 4: //金鶯
@@ -417,8 +455,18 @@ public class MLBProfit {
                     + calculateClientProfit(rank6Stadium.seats, rank6Stadium.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰老虎6
         }
         //當自己是主場
-        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
-                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝)
+        WorldSeriesProfitResult result4 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result4.getMaxProfit();
+        playGames = result4.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
+//        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+//                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝)
         break;
 
       case 5: //皇家
@@ -456,8 +504,18 @@ public class MLBProfit {
         }
 
         //當自己是主場
-        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
-                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝) -> 世界大賽
+        WorldSeriesProfitResult result5 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result5.getMaxProfit();
+        playGames = result5.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
+//        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+//                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝) -> 世界大賽
         break;
 
       case 6: //老虎
@@ -511,8 +569,18 @@ public class MLBProfit {
           }
         }
         //當自己是主場
-        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
-                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝) -> 世界大賽
+        WorldSeriesProfitResult result6 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result6.getMaxProfit();
+        playGames = result6.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
+//        maxProfit = maxProfit + calculateWorldGameHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
+//                + calculateWorldGameClientProfit(56000, 1.0, 3); //(7戰4勝) -> 世界大賽
         break;
 
       default:
@@ -546,6 +614,10 @@ public class MLBProfit {
   //世界大賽主場分潤方法
   public static double calculateWorldGameHostProfit(int seats, double attendanceRate, int games) {
     return seats * attendanceRate * worldGameTickPrice * hostRevenue * games;
+  }
+
+  private static List<MLBProfit.Team> getTeamsByRegion(String region, List<MLBProfit.Team> alTeams, List<MLBProfit.Team> nlTeams) {
+    return region.equalsIgnoreCase("AL") ? alTeams : nlTeams;
   }
 
     //世界大賽方法
