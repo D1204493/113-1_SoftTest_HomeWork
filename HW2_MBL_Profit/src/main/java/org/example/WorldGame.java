@@ -2,6 +2,7 @@ package org.example;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -11,6 +12,9 @@ import java.util.logging.Logger;
 public class WorldGame {
   // 設定 Logger
   private static final Logger logger = Logger.getLogger(WorldGame.class.getName());
+  private static final int worldGameTickPrice = 800; //門票
+  private static final double hostRevenue = 0.85; //主場分潤
+  private static final double clientRevenue = 0.15; //客場分潤
 
   public static void main(String[] args) {
     ObjectMapper objectMapper = new ObjectMapper();
@@ -68,10 +72,10 @@ public class WorldGame {
       // 選擇一個基準隊伍
       int baseTeamRank = 6; // 隊伍排名
       // 假設我們選擇基準隊伍來自 AL 區，並對比 NL 區的隊伍
-      Optional<MLBProfit.TeamStadium> bestCandidate = findBestCandidate(baseTeamRank, baseTeams, targetTeams, stadiumInfos);
+      Pair<Optional<MLBProfit.TeamStadium>, Integer> bestCandidate = findBestCandidate(baseTeamRank, baseTeams, targetTeams, stadiumInfos);
       // 輸出結果
-      if (bestCandidate.isPresent()) {
-        MLBProfit.TeamStadium bestTeam = bestCandidate.get();
+      if (bestCandidate.getFirst().isPresent()) {
+        MLBProfit.TeamStadium bestTeam = bestCandidate.getFirst().get();
         System.out.println("最佳 " + targetRegion + " 球隊: " + bestTeam.team + ", Stadium: " + bestTeam.stadium +
                 ", Seats: " + bestTeam.seats + ", World Series Attendance Rate: " + bestTeam.worldSeriesAttendanceRate);
       } else {
@@ -135,7 +139,9 @@ public class WorldGame {
 
 
   // 方法：查找另一區域中 scoreRate 比指定隊伍還要小的隊伍，並找到 Seats * World Series Attendance Rate 最高者
-  private static Optional<MLBProfit.TeamStadium> findBestCandidate(int baseTeamRank, List<MLBProfit.Team> baseTeams, List<MLBProfit.Team> targetTeams, List<MLBProfit.TeamStadium> targetStadiumInfos) {
+  private static Pair<Optional<MLBProfit.TeamStadium>, Integer> findBestCandidate(
+          int baseTeamRank, List<MLBProfit.Team> baseTeams, List<MLBProfit.Team> targetTeams,
+          List<MLBProfit.TeamStadium> targetStadiumInfos) {
     // Step 1: 找出指定的 base 隊伍和它的 scoreRate
     double baseScoreRate = 0.0;
     boolean teamFound = false;
@@ -152,7 +158,7 @@ public class WorldGame {
 
     if (!teamFound) {
       System.out.println("\n未找到基準隊伍，Rank：" + baseTeamRank);
-      return Optional.empty();
+      return new Pair<>(Optional.empty(), 0); // 返回空的Optional和默認games值
     }
     System.out.println("\n找到基準隊伍: " + baseTeamName + " - Score Rate: " + baseScoreRate);
 
@@ -167,6 +173,7 @@ public class WorldGame {
 
     MLBProfit.TeamStadium bestTeam = null;
     double maxSeatsAttendance = 0.0;
+    int games = allGreaterThanBase ? 3 : 4; // 根據條件設置games
     if (allGreaterThanBase) {
       // Step 3A: 如果所有目標隊伍的 scoreRate 都大於基準隊伍，選擇 seats * worldSeriesAttendanceRate 最大者
       System.out.println("\n所有目標隊伍的 scoreRate 都大於基準隊伍。");
@@ -202,12 +209,53 @@ public class WorldGame {
         }
       }
     }
-    // 如果找到最合適的隊伍，返回該隊伍的球場資訊，否則返回空的 Optional
-    return Optional.ofNullable(bestTeam);
+    // 返回最佳隊伍和games
+    return new Pair<>(Optional.ofNullable(bestTeam), games);
   }
 
   private static List<MLBProfit.Team> getTeamsByRegion(String region, List<MLBProfit.Team> alTeams, List<MLBProfit.Team> nlTeams) {
     return region.equalsIgnoreCase("AL") ? alTeams : nlTeams;
+  }
+
+
+
+
+  // New method to calculate profits
+  public static WorldSeriesProfitResult calculateWorldSeriesProfit(
+          String baseRegion, String targetRegion,
+          int baseTeamRank, List<MLBProfit.Team> baseTeams,
+          List<MLBProfit.Team> targetTeams, List<MLBProfit.TeamStadium> stadiumInfos) {
+
+    Pair<Optional<MLBProfit.TeamStadium>, Integer> result = findBestCandidate(baseTeamRank, baseTeams, targetTeams, stadiumInfos);
+    Optional<MLBProfit.TeamStadium> bestCandidate = result.getFirst();
+    int games = result.getSecond(); // 獲取games的值
+
+    // Calculate and return the profit based on the candidate found
+    if (bestCandidate.isPresent()) {
+      MLBProfit.TeamStadium bestTeam = bestCandidate.get();
+      double maxProfit = 0.0;
+
+      if (games == 4) {
+        // 當自己是主場
+        maxProfit += calculateWorldGameHostProfit(bestTeam.seats, bestTeam.playoffAttendanceRate, games); // 使用games的值
+      } else {
+        // 當自己是客場
+        maxProfit += calculateWorldGameClientProfit(bestTeam.seats, bestTeam.playoffAttendanceRate, games); // 使用games的值
+      }
+      return new WorldSeriesProfitResult(maxProfit, games);
+    } else {
+      return  new WorldSeriesProfitResult(0.0, 0); // No profit if no team is found
+    }
+  }
+
+  //世界大賽主場分潤方法
+  private static double calculateWorldGameHostProfit(int seats, double attendanceRate, int games) {
+    return seats * attendanceRate * worldGameTickPrice * hostRevenue * games;
+  }
+
+  //世界大賽客場分潤方法
+  private static double calculateWorldGameClientProfit(int seats, double attendanceRate, int games) {
+    return seats * attendanceRate * worldGameTickPrice * clientRevenue * games;
   }
 
 }
