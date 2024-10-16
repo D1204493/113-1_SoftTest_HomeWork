@@ -620,8 +620,4 @@ public class MLBProfit {
     return region.equalsIgnoreCase("AL") ? alTeams : nlTeams;
   }
 
-    //世界大賽方法
-
-
-
 }

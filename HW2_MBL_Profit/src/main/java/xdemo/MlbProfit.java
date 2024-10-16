@@ -3,6 +3,8 @@ package xdemo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Main;
+import org.example.WorldGame;
+import org.example.WorldSeriesProfitResult;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,21 +20,43 @@ import java.util.logging.Logger;
  * @author Huang
  */
 public class MlbProfit {
+  /**
+   *
+   *
+   * @author Huang
+   */
   //設定 Logger
   private static final Logger logger = Logger.getLogger(Main.class.getName());
-
+  /**
+   *
+   *
+   * @author Huang
+   */
   private static final int tickPrice = 450; //門票
-//  private static final int worldGameTicket = 800; //門票
+  /**
+   *
+   *
+   * @author Huang
+   */
+  private static final int worldGameTicket = 800; //門票
+  /**
+   *
+   *
+   * @author Huang
+   */
   private static final double hostRevenue = 0.85; //主場分潤
+  /**
+   *
+   *
+   * @author Huang
+   */
   private static final double clientRevenue = 0.15; //客場分潤
 
   /**
-   * This is a fetch JSON file class
+   *
+   *
    * @author Huang
    */
-  // 定義對應的 JSON 結構
-  // JSON 中的字段名 "AL Leaders" 與 Java 類中的屬性 "AL_Leaders" 不匹配。JSON 中的字段名有空格，而 Java 屬性名稱是使用下劃線的。
-  // 透過使用 Jackson 的 @JsonProperty 註解來指定 JSON 中的字段名稱對應 Java 類的屬性名稱。這樣，即使 JSON 中的字段名包含空格，也能夠正確解析。
   public static class MLBTeams {
     @JsonProperty("AL Leaders")
     public List<org.example.MLBProfit.Team> AL_Leaders;
@@ -94,12 +118,12 @@ public class MlbProfit {
       // 處理合併後的球隊列表
       System.out.println("=== AL All Teams ===");
       logger.log(Level.INFO, "處理 AL 所有球隊資料");
-      processTeams(allTeams, stadiumMap);
+      processTeams(allTeams, nlTeams, stadiumMap, teamStadium);
 
       // 處理合併後的 NL 球隊列表
       System.out.println("=== NL All Teams ===");
       logger.log(Level.INFO, "處理 NL 所有球隊資料");
-      processTeams(nlTeams, stadiumMap);
+      processTeams(nlTeams, allTeams, stadiumMap, teamStadium);
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "發生未預期的錯誤", e);
@@ -107,8 +131,9 @@ public class MlbProfit {
     }
   }
 
+
   // 統一處理球隊的利潤計算與輸出
-  public static void processTeams(List<org.example.MLBProfit.Team> teams, Map<String, org.example.MLBProfit.TeamStadium> stadiumMap) {
+  public static void processTeams(List<org.example.MLBProfit.Team> teams, List<org.example.MLBProfit.Team> otherTeams, Map<String, org.example.MLBProfit.TeamStadium> stadiumMap, List<org.example.MLBProfit.TeamStadium> teamStadium) {
     //日誌
     if (teams == null || teams.isEmpty()) {
       logger.log(Level.WARNING, "球隊資料為空，無法處理。");
@@ -158,27 +183,33 @@ public class MlbProfit {
     }
     System.out.println("===============================\n"); //確定rankToStadiumMap有資料
 
+    String baseRegion = "NL"; // 可替換為 "NL" 來進行其他區域比較
+    String targetRegion = "AL"; // 可替換為 "AL" 來進行其他區域比較
+    List<org.example.MLBProfit.Team> baseTeams = getTeamsByRegion(baseRegion, teams, otherTeams);
+    List<org.example.MLBProfit.Team> targetTeams = getTeamsByRegion(targetRegion, teams, otherTeams);
+
     // 利潤計算 calculateAndPrintProfit
     for (org.example.MLBProfit.Team team : teams) {
       org.example.MLBProfit.TeamStadium stadiumInfo = rankToStadiumMap.get(team.Rank); //確定rankToStadiumMap有資料
       if (stadiumInfo != null) {
         logger.log(Level.INFO, "計算利潤: 球隊 {0}, Rank: {1}, 球場: {2}",
                 new Object[]{team.team, team.Rank, stadiumInfo.team});
-        calculateAndPrintProfit(team.Rank, stadiumInfo, rankToStadiumMap);
+        calculateAndPrintProfit(team.Rank, stadiumInfo, rankToStadiumMap, baseTeams, targetTeams, teamStadium); // 傳遞所有球隊
       } else {
         logger.log(Level.WARNING, "無法找到 {0} 的對應球場資訊進行利潤計算。", team.team);
       }
     }
   }
 
-  public static void calculateAndPrintProfit(int rank, org.example.MLBProfit.TeamStadium stadiumInfo, Map<Integer, org.example.MLBProfit.TeamStadium> rankToStadiumMap) {
+  public static void calculateAndPrintProfit(int rank, org.example.MLBProfit.TeamStadium stadiumInfo, Map<Integer, org.example.MLBProfit.TeamStadium> rankToStadiumMap, List<org.example.MLBProfit.Team> baseTeams, List<org.example.MLBProfit.Team> targetTeams, List<org.example.MLBProfit.TeamStadium> teamStadium) {
     logger.log(Level.INFO, "計算 Rank {0} 的球隊利潤", rank);
     double maxProfit = 0;
     double minProfit = 0;
-
+    double worldProfit = 0;
+    int playGames;
     // 根據球隊外卡排名使用 switch 來進行利潤計算
     switch(rank) {
-      case 1://洋基(5戰3勝) -> (7戰4勝)   //先不放世界大賽
+      case 1://洋基(5戰3勝) -> (7戰4勝)
         System.out.println("排名第" + rank + "的隊伍：" + stadiumInfo.team);
         // 取得排名4和排名5的球隊資料
         org.example.MLBProfit.TeamStadium rank4Stadium1 = rankToStadiumMap.get(4);
@@ -243,9 +274,21 @@ public class MlbProfit {
                     + calculateClientProfit(rank3Stadium.seats, rank3Stadium.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰老虎6或太空人3(都是41K, 滿座率都100%)
           }
         }
+        //當自己是主場
+        WorldSeriesProfitResult result = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result.getMaxProfit();
+        playGames = result.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝) -> 對戰道奇 (56K, 滿座率100%)
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
+
         break;
 
-      case 2: //守護者   //先不放世界大賽
+      case 2: //守護者
         System.out.println("排名第" + rank + "的隊伍：" + stadiumInfo.team);
         // 取得排名3和排名6的球隊資料
         rank3Stadium = rankToStadiumMap.get(3);
@@ -300,9 +343,20 @@ public class MlbProfit {
                     + calculateClientProfit(rank5Stadium.seats, rank5Stadium.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰金鶯4
           }
         }
+        //當自己是主場
+        WorldSeriesProfitResult result2 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result2.getMaxProfit();
+        playGames = result2.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
         break;
 
-      case 3: //太空人   //先不放世界大賽
+      case 3: //太空人
         System.out.println("排名第" + rank + "的隊伍：" + stadiumInfo.team);
         org.example.MLBProfit.TeamStadium rank2Stadium1 = rankToStadiumMap.get(2); // 抓取排名第2的球隊資料 -> (5戰3勝)一定會對到排名為2的隊伍
         if(rank2Stadium1 != null) {
@@ -339,9 +393,20 @@ public class MlbProfit {
                     + calculateClientProfit(rank5Stadium.seats, rank5Stadium.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰金鶯4
           }
         }
+        //當自己是主場
+        WorldSeriesProfitResult result3 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result3.getMaxProfit();
+        playGames = result3.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
         break;
 
-      case 4: //金鶯   //先不放世界大賽
+      case 4: //金鶯
         System.out.println("排名第" + rank + "的隊伍：" + stadiumInfo.team);
         org.example.MLBProfit.TeamStadium rank1Stadium1 = rankToStadiumMap.get(1); // 抓取排名第1的球隊資料 -> (5戰3勝)一定會對到排名為1的隊伍
         if(rank1Stadium1 != null) {
@@ -368,9 +433,20 @@ public class MlbProfit {
           maxProfit = maxProfit + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4)
                   + calculateClientProfit(rank6Stadium.seats, rank6Stadium.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰老虎6
         }
+        //當自己是主場
+        WorldSeriesProfitResult result4 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result4.getMaxProfit();
+        playGames = result4.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
         break;
 
-      case 5: //皇家  //先不放世界大賽
+      case 5: //皇家
         System.out.println("排名第" + rank + "的隊伍：" + stadiumInfo.team);
         rank4Stadium = rankToStadiumMap.get(4); //與排名第4對戰
         org.example.MLBProfit.TeamStadium rank1Stadium2 = rankToStadiumMap.get(1); // 抓取排名第1的球隊資料 -> (5戰3勝)一定會對到排名為1的隊伍
@@ -399,9 +475,21 @@ public class MlbProfit {
           maxProfit = maxProfit + calculateClientProfit(rank6Stadium.seats, rank6Stadium.playoffAttendanceRate, 3)
                   + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 4); //(7戰4勝) -> 對戰老虎6
         }
+
+        //當自己是主場
+        WorldSeriesProfitResult result5 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result5.getMaxProfit();
+        playGames = result5.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
         break;
 
-      case 6: //老虎   //先不放世界大賽
+      case 6: //老虎
         System.out.println("排名第" + rank + "的隊伍：" + stadiumInfo.team);
         rank3Stadium = rankToStadiumMap.get(3); // 抓取排名第3的球隊資料
         org.example.MLBProfit.TeamStadium rank2Stadium2 = rankToStadiumMap.get(2); // 抓取排名第2的球隊資料
@@ -449,13 +537,24 @@ public class MlbProfit {
                     + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 3); //(7戰4勝) -> 對戰洋基1
           }
         }
+        //當自己是主場
+        WorldSeriesProfitResult result6 = WorldGame.calculateWorldSeriesProfit("AL","NL", rank, baseTeams, targetTeams, teamStadium);
+        worldProfit = result6.getMaxProfit();
+        playGames = result6.getGames();
+        if(playGames == 3) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateWorldGameClientProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames));
+        } else if (playGames == 4) {
+          maxProfit = maxProfit + worldProfit
+                  + calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, (7-playGames)); //(7戰4勝)
+        }
         break;
 
       default:
         System.out.println("無效的排名");
         return;
     }
-    System.out.printf("不放世界大賽之最大利潤：USD$ %,.2f%n", maxProfit);
+    System.out.printf("最大利潤：USD$ %,.2f%n", maxProfit);
     System.out.printf("最小利潤：USD$ %,.2f%n", minProfit);
     System.out.println("----------------------------");
   }
@@ -475,5 +574,17 @@ public class MlbProfit {
     return calculateProfit(seats, attendanceRate) * hostRevenue * games;
   }
 
+  //世界大賽客場分潤方法
+  public static double calculateWorldGameClientProfit(int seats, double attendanceRate, int games) {
+    return seats * attendanceRate * worldGameTicket * clientRevenue * games;
+  }
+  //世界大賽主場分潤方法
+  public static double calculateWorldGameHostProfit(int seats, double attendanceRate, int games) {
+    return seats * attendanceRate * worldGameTicket * hostRevenue * games;
+  }
+
+  private static List<org.example.MLBProfit.Team> getTeamsByRegion(String region, List<org.example.MLBProfit.Team> alTeams, List<org.example.MLBProfit.Team> nlTeams) {
+    return region.equalsIgnoreCase("AL") ? alTeams : nlTeams;
+  }
 
 }
