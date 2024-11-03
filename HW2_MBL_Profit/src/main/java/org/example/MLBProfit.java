@@ -226,14 +226,14 @@ public class MLBProfit {
                     + calculateClientProfit(rank4Stadium1.seats, rank4Stadium1.playoffAttendanceRate, 2); //(5戰3勝) -> 對戰金鶯4
 
             minProfit = calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 2)
-                    + calculateClientProfit(rank4Stadium1.seats, rank4Stadium1.playoffAttendanceRate, 1); //(3敗)
+                    + calculateClientProfit(rank5Stadium1.seats, rank5Stadium1.playoffAttendanceRate, 1); //(3敗)
           } else {
             // 選擇排名5的隊伍
             maxProfit = calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 3)
                     + calculateClientProfit(rank5Stadium1.seats, rank5Stadium1.playoffAttendanceRate, 2); //(5戰3勝) -> 對戰金鶯4
 
             minProfit = calculateHostProfit(stadiumInfo.seats, stadiumInfo.playoffAttendanceRate, 2)
-                    + calculateClientProfit(rank5Stadium1.seats, rank5Stadium1.playoffAttendanceRate, 1); //(3敗)
+                    + calculateClientProfit(rank4Stadium1.seats, rank4Stadium1.playoffAttendanceRate, 1); //(3敗)
           }
         }
         System.out.printf("測試maxProfit: %,.2f%n", maxProfit);
