@@ -33,7 +33,7 @@ public class TeamSorter {
     return teams;
   }
 
-  // 確認排序是否正確
+  // 防禦性測試，確認排序是否正確
   public void validateSortedTeams(List<Team> teams, String leagueName) {
     assert (Double.parseDouble(teams.get(0).getPct()) >= Double.parseDouble(teams.get(1).getPct())) : leagueName + "第一的勝率不可能 < 第二的勝率";
     assert (Double.parseDouble(teams.get(1).getPct()) >= Double.parseDouble(teams.get(2).getPct())) : leagueName + "第二的勝率不可能 < 第三的勝率";

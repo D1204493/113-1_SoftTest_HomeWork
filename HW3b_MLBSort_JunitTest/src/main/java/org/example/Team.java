@@ -1,5 +1,6 @@
 package org.example;
 
+
 public class Team {
   private String teamName;
   private String win;
